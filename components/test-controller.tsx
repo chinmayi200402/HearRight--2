@@ -53,7 +53,7 @@ export function TestController({ calibration, onThresholdComplete, onTestComplet
 
   const handleResponse = useCallback(
     (heard: boolean) => {
-      if (isPlaying || isPaused) return
+      if (isPlaying || isPaused || staircase.isComplete()) return
 
       staircase.addResponse(heard)
 

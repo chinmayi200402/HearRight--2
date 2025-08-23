@@ -46,6 +46,9 @@ export class PDFReportGenerator {
     // Threshold Table
     yPosition = this.drawThresholdTable(page, boldFont, regularFont, session.thresholds, yPosition, width)
 
+    // Audiogram Visualization
+    yPosition = this.drawAudiogram(page, boldFont, regularFont, session.thresholds, yPosition, width)
+
     // PTA and Interpretation
     yPosition = this.drawPTAResults(page, boldFont, regularFont, session.thresholds, yPosition, width)
 
@@ -370,6 +373,230 @@ export class PDFReportGenerator {
     })
 
     return yPosition - 30
+  }
+
+  private static drawAudiogram(
+    page: any,
+    boldFont: any,
+    regularFont: any,
+    thresholds: Threshold[],
+    yPosition: number,
+    width: number,
+  ): number {
+    // Section title
+    page.drawText("AUDIOGRAM", {
+      x: 60,
+      y: yPosition,
+      size: 14,
+      font: boldFont,
+      color: this.COLORS.primary,
+    })
+
+    yPosition -= 25
+
+    // Chart dimensions
+    const chartX = 80
+    const chartY = yPosition - 200
+    const chartWidth = width - 160
+    const chartHeight = 180
+
+    // Draw chart background
+    page.drawRectangle({
+      x: chartX,
+      y: chartY,
+      width: chartWidth,
+      height: chartHeight,
+      color: rgb(0.99, 0.99, 0.99),
+      borderColor: this.COLORS.secondary,
+      borderWidth: 1,
+    })
+
+    // Frequencies and hearing levels
+    const frequencies = [500, 1000, 2000, 4000]
+    const hearingLevels = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
+
+    // Draw grid lines and labels
+    // Vertical lines (frequencies)
+    frequencies.forEach((freq, index) => {
+      const x = chartX + (index * chartWidth) / (frequencies.length - 1)
+
+      // Grid line
+      page.drawLine({
+        start: { x, y: chartY },
+        end: { x, y: chartY + chartHeight },
+        thickness: 0.5,
+        color: rgb(0.9, 0.9, 0.9),
+      })
+
+      // Frequency label
+      page.drawText(`${formatFrequency(freq)}`, {
+        x: x - 15,
+        y: chartY - 15,
+        size: 8,
+        font: regularFont,
+        color: this.COLORS.primary,
+      })
+    })
+
+    // Horizontal lines (hearing levels)
+    hearingLevels.forEach((level, index) => {
+      const y = chartY + chartHeight - (index * chartHeight) / (hearingLevels.length - 1)
+
+      // Grid line
+      page.drawLine({
+        start: { x: chartX, y },
+        end: { x: chartX + chartWidth, y },
+        thickness: level % 20 === 0 ? 1 : 0.5,
+        color: level % 20 === 0 ? rgb(0.8, 0.8, 0.8) : rgb(0.9, 0.9, 0.9),
+      })
+
+      // Hearing level label
+      page.drawText(`${level}`, {
+        x: chartX - 20,
+        y: y - 3,
+        size: 8,
+        font: regularFont,
+        color: this.COLORS.primary,
+      })
+    })
+
+    // Y-axis label
+    page.drawText("Hearing Level (dB HL)", {
+      x: 25,
+      y: chartY + chartHeight / 2,
+      size: 10,
+      font: boldFont,
+      color: this.COLORS.primary,
+      rotate: { type: "degrees", angle: 90 },
+    })
+
+    // X-axis label
+    page.drawText("Frequency (Hz)", {
+      x: chartX + chartWidth / 2 - 40,
+      y: chartY - 35,
+      size: 10,
+      font: boldFont,
+      color: this.COLORS.primary,
+    })
+
+    // Plot thresholds
+    const rightThresholds = thresholds.filter((t) => t.ear === "Right").sort((a, b) => a.freqHz - b.freqHz)
+    const leftThresholds = thresholds.filter((t) => t.ear === "Left").sort((a, b) => a.freqHz - b.freqHz)
+
+    // Helper function to get coordinates
+    const getCoordinates = (freq: number, threshold: number) => {
+      const freqIndex = frequencies.indexOf(freq)
+      if (freqIndex === -1) return null
+
+      const x = chartX + (freqIndex * chartWidth) / (frequencies.length - 1)
+      const y = chartY + chartHeight - (threshold / 120) * chartHeight
+      return { x, y }
+    }
+
+    // Draw right ear (red circles)
+    let prevRightCoords = null
+    rightThresholds.forEach((threshold) => {
+      const coords = getCoordinates(threshold.freqHz, threshold.thresholdDb)
+      if (!coords) return
+
+      // Draw circle (O symbol)
+      page.drawCircle({
+        x: coords.x,
+        y: coords.y,
+        size: 4,
+        borderColor: this.COLORS.danger,
+        borderWidth: 2,
+      })
+
+      // Draw connecting line
+      if (prevRightCoords) {
+        page.drawLine({
+          start: prevRightCoords,
+          end: coords,
+          thickness: 1,
+          color: this.COLORS.danger,
+          dashArray: [3, 2],
+        })
+      }
+      prevRightCoords = coords
+    })
+
+    // Draw left ear (blue X marks)
+    let prevLeftCoords = null
+    leftThresholds.forEach((threshold) => {
+      const coords = getCoordinates(threshold.freqHz, threshold.thresholdDb)
+      if (!coords) return
+
+      // Draw X symbol
+      const size = 4
+      page.drawLine({
+        start: { x: coords.x - size, y: coords.y - size },
+        end: { x: coords.x + size, y: coords.y + size },
+        thickness: 2,
+        color: this.COLORS.accent,
+      })
+      page.drawLine({
+        start: { x: coords.x - size, y: coords.y + size },
+        end: { x: coords.x + size, y: coords.y - size },
+        thickness: 2,
+        color: this.COLORS.accent,
+      })
+
+      // Draw connecting line
+      if (prevLeftCoords) {
+        page.drawLine({
+          start: prevLeftCoords,
+          end: coords,
+          thickness: 1,
+          color: this.COLORS.accent,
+          dashArray: [3, 2],
+        })
+      }
+      prevLeftCoords = coords
+    })
+
+    // Legend
+    const legendY = chartY + chartHeight + 20
+
+    // Right ear legend
+    page.drawCircle({
+      x: chartX + 20,
+      y: legendY,
+      size: 4,
+      borderColor: this.COLORS.danger,
+      borderWidth: 2,
+    })
+    page.drawText("Right Ear", {
+      x: chartX + 35,
+      y: legendY - 3,
+      size: 9,
+      font: regularFont,
+      color: this.COLORS.primary,
+    })
+
+    // Left ear legend
+    const leftLegendX = chartX + 120
+    page.drawLine({
+      start: { x: leftLegendX - 4, y: legendY - 4 },
+      end: { x: leftLegendX + 4, y: legendY + 4 },
+      thickness: 2,
+      color: this.COLORS.accent,
+    })
+    page.drawLine({
+      start: { x: leftLegendX - 4, y: legendY + 4 },
+      end: { x: leftLegendX + 4, y: legendY - 4 },
+      thickness: 2,
+      color: this.COLORS.accent,
+    })
+    page.drawText("Left Ear", {
+      x: leftLegendX + 15,
+      y: legendY - 3,
+      size: 9,
+      font: regularFont,
+      color: this.COLORS.primary,
+    })
+
+    return yPosition - 260
   }
 
   private static drawPTAResults(
