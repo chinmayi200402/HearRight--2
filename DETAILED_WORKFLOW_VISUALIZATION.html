@@ -1,0 +1,393 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HearRight - Detailed Workflow Execution Tree</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            margin: 0;
+            padding: 20px;
+            min-height: 100vh;
+        }
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            text-align: center;
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+        .section {
+            margin-bottom: 40px;
+        }
+        .section h2 {
+            color: #667eea;
+            border-bottom: 3px solid #667eea;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background: #f9f9f9;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .note {
+            background: #e3f2fd;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background: #667eea;
+            color: white;
+        }
+        tr:nth-child(even) {
+            background: #f9f9f9;
+        }
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎧 HearRight Audiometer - Complete Workflow Execution Tree</h1>
+        <p class="subtitle">Visual representation of how data flows through the application</p>
+
+        <!-- Main Workflow Tree -->
+        <div class="section">
+            <h2>📊 Complete Application Workflow</h2>
+            <div class="mermaid">
+                graph TD
+                    A["🏠 Home Page<br/>app/page.tsx"] --> B["👤 Onboarding<br/>app/onboarding/page.tsx<br/>Patient Demographics"]
+                    B --> C["Select Patient<br/>app/patient/page.tsx<br/>Choose/Create"]
+                    C --> D["🎧 Calibration<br/>app/calibration/page.tsx<br/>Setup Audio Device"]
+                    D --> E["🔊 Pure Tone Test<br/>app/test/page.tsx<br/>2-Minute Audiometry"]
+                    E --> F["📊 Results<br/>app/summary/page.tsx<br/>Audiogram & PDF"]
+                    F --> G["📁 History<br/>app/reports/page.tsx<br/>Past Tests"]
+                    G --> H{User Action}
+                    H -->|View Report| I["Report Details<br/>app/reports/id/page.tsx"]
+                    H -->|New Test| B
+                    I --> J["Export/Share<br/>PDF Download"]
+                    
+                    style A fill:#667eea,color:#fff
+                    style B fill:#764ba2,color:#fff
+                    style C fill:#764ba2,color:#fff
+                    style D fill:#00bcd4,color:#fff
+                    style E fill:#ff6b6b,color:#fff
+                    style F fill:#4caf50,color:#fff
+                    style G fill:#ff9800,color:#fff
+                    style H fill:#9c27b0,color:#fff
+                    style I fill:#ff9800,color:#fff
+                    style J fill:#4caf50,color:#fff
+            </div>
+        </div>
+
+        <!-- Step 3: Test Workflow Details -->
+        <div class="section">
+            <h2>🔄 STEP 3: Pure Tone Test Execution (2 Minutes)</h2>
+            <div class="mermaid">
+                graph TD
+                    A["Test Initialized<br/>Load patient & calibration"] --> B["Left Ear Loop"]
+                    B --> C["1000 Hz Test"]
+                    C --> D["Play Tone<br/>audio-engine.ts"]
+                    D --> E["Wait for Response<br/>response-pad.tsx"]
+                    E --> F{User Heard?}
+                    F -->|Yes| G["Update Algorithm<br/>hughson-westlake.ts"]
+                    F -->|No| G
+                    G --> H{Threshold<br/>Complete?}
+                    H -->|No| D
+                    H -->|Yes| I["Store Threshold<br/>Zustand Store"]
+                    I --> J["Next Frequency<br/>2000 Hz"]
+                    J --> K["Test 2000 Hz"]
+                    K --> D
+                    K -.->|Similar Loop| L["4000 Hz<br/>& 500 Hz"]
+                    L --> M["Left Ear Complete"]
+                    M --> N["Right Ear Loop<br/>Repeat for R"]
+                    N --> O["All Tests Done<br/>Calculate PTA"]
+                    O --> P["Save to IndexedDB<br/>storage.ts"]
+                    P --> Q["Navigate to /summary"]
+                    
+                    style A fill:#667eea,color:#fff
+                    style D fill:#ff6b6b,color:#fff
+                    style E fill:#ff9800,color:#fff
+                    style F fill:#9c27b0,color:#fff
+                    style G fill:#2196f3,color:#fff
+                    style I fill:#4caf50,color:#fff
+                    style O fill:#4caf50,color:#fff
+                    style Q fill:#667eea,color:#fff
+            </div>
+            <div class="note">
+                <strong>Key Points:</strong>
+                <ul>
+                    <li>Algorithm: Hughson-Westlake staircase with 1 reversal (fast)</li>
+                    <li>Frequencies: 1000 Hz, 2000 Hz, 4000 Hz, 500 Hz (optimized 4 only)</li>
+                    <li>Each ear tested separately (Left first, then Right)</li>
+                    <li>Total time: ~2 minutes for both ears</li>
+                </ul>
+            </div>
+        </div>
+
+        <!-- Component Hierarchy -->
+        <div class="section">
+            <h2>🏗️ Component Hierarchy & Communication</h2>
+            <div class="mermaid">
+                graph TD
+                    A["app/test/page.tsx<br/>(Main Container)"]
+                    A --> B["test-controller.tsx<br/>(Logic & Orchestration)"]
+                    A --> C["test-progress.tsx<br/>(Progress Bar)"]
+                    B --> D["response-pad.tsx<br/>(User Input)"]
+                    B --> E["audio-engine.ts<br/>(Sound Generation)"]
+                    B --> F["hughson-westlake.ts<br/>(Algorithm)"]
+                    A --> G["UI Components<br/>button, card, alert"]
+                    
+                    D -.->|Event| B
+                    B -.->|State Update| C
+                    B -.->|Store Update| H["Zustand Store<br/>lib/store.ts"]
+                    H -.->|Persist| I["IndexedDB<br/>lib/storage.ts"]
+                    
+                    style A fill:#667eea,color:#fff
+                    style B fill:#2196f3,color:#fff
+                    style D fill:#ff9800,color:#fff
+                    style E fill:#ff6b6b,color:#fff
+                    style F fill:#9c27b0,color:#fff
+                    style H fill:#4caf50,color:#fff
+                    style I fill:#00bcd4,color:#fff
+            </div>
+        </div>
+
+        <!-- Data Flow -->
+        <div class="section">
+            <h2>📡 Data Flow Architecture</h2>
+            <div class="mermaid">
+                graph LR
+                    A["User Input<br/>Button Click<br/>Form Submit"]
+                    B["Page Component<br/>app/page.tsx"]
+                    C["Child Components<br/>component.tsx"]
+                    D["Zustand Store<br/>Global State"]
+                    E["Business Logic<br/>lib/*.ts"]
+                    F["Storage Layer<br/>IndexedDB"]
+                    G["UI Rendered<br/>Display Result"]
+                    
+                    A --> B
+                    B --> C
+                    C --> D
+                    D --> E
+                    E --> F
+                    F --> D
+                    D --> G
+                    G -.->|User sees| A
+                    
+                    style A fill:#ff9800,color:#fff
+                    style B fill:#667eea,color:#fff
+                    style C fill:#2196f3,color:#fff
+                    style D fill:#9c27b0,color:#fff
+                    style E fill:#ff6b6b,color:#fff
+                    style F fill:#00bcd4,color:#fff
+                    style G fill:#4caf50,color:#fff
+            </div>
+        </div>
+
+        <!-- File Location Guide -->
+        <div class="section">
+            <h2>📁 Critical File Locations</h2>
+            <table>
+                <tr>
+                    <th>What</th>
+                    <th>File Location</th>
+                    <th>Purpose</th>
+                </tr>
+                <tr>
+                    <td>Home Page</td>
+                    <td><code>app/page.tsx</code></td>
+                    <td>Welcome & start button</td>
+                </tr>
+                <tr>
+                    <td>Patient Form</td>
+                    <td><code>app/onboarding/page.tsx</code></td>
+                    <td>Collect demographics</td>
+                </tr>
+                <tr>
+                    <td>Calibration</td>
+                    <td><code>app/calibration/page.tsx</code></td>
+                    <td>Setup audio device</td>
+                </tr>
+                <tr>
+                    <td>Hearing Test</td>
+                    <td><code>app/test/page.tsx</code></td>
+                    <td>Main 2-minute test</td>
+                </tr>
+                <tr>
+                    <td>Results</td>
+                    <td><code>app/summary/page.tsx</code></td>
+                    <td>Audiogram & PDF export</td>
+                </tr>
+                <tr>
+                    <td>Test History</td>
+                    <td><code>app/reports/page.tsx</code></td>
+                    <td>View past tests</td>
+                </tr>
+                <tr>
+                    <td>Data Types</td>
+                    <td><code>lib/types.ts</code></td>
+                    <td>TypeScript interfaces</td>
+                </tr>
+                <tr>
+                    <td>Global State</td>
+                    <td><code>lib/store.ts</code></td>
+                    <td>Zustand store</td>
+                </tr>
+                <tr>
+                    <td>Test Algorithm</td>
+                    <td><code>lib/hughson-westlake.ts</code></td>
+                    <td>Staircase method</td>
+                </tr>
+                <tr>
+                    <td>Audio Engine</td>
+                    <td><code>lib/audio-engine.ts</code></td>
+                    <td>Web Audio API</td>
+                </tr>
+                <tr>
+                    <td>Database</td>
+                    <td><code>lib/storage.ts</code></td>
+                    <td>IndexedDB CRUD</td>
+                </tr>
+                <tr>
+                    <td>PDF Export</td>
+                    <td><code>lib/pdf-generator.ts</code></td>
+                    <td>Report generation</td>
+                </tr>
+            </table>
+        </div>
+
+        <!-- Request-Response Cycle -->
+        <div class="section">
+            <h2>🔁 Request-Response Cycle During Test</h2>
+            <div class="mermaid">
+                sequenceDiagram
+                    participant User as 👤 User
+                    participant Page as 📄 app/test/page.tsx
+                    participant Controller as 🎮 test-controller.tsx
+                    participant Algo as 📐 Algorithm<br/>hughson-westlake.ts
+                    participant Audio as 🔊 audio-engine.ts
+                    participant Store as 💾 Zustand Store
+                    participant DB as 🗄️ IndexedDB
+                    
+                    User->>Page: Click "Start Test"
+                    Page->>Controller: Initialize test
+                    Controller->>Algo: Create staircase
+                    
+                    loop For Each Tone
+                        Algo->>Audio: Play tone (50 dB @ 1000 Hz)
+                        Audio-->>User: 🔊 Sound plays
+                        User->>Page: Click "I Heard" button
+                        Page->>Controller: Response received
+                        Controller->>Algo: Add response (heard: true)
+                        Algo->>Algo: Calculate next level
+                        Algo-->>Controller: Next level = 40 dB
+                        Controller->>Store: Update threshold
+                        Store->>DB: Save progress
+                    end
+                    
+                    Algo-->>Controller: Threshold found (28 dB)
+                    Controller->>Store: Save final result
+                    Store->>DB: Persist to IndexedDB
+                    Controller-->>Page: Test complete
+                    Page->>User: Show summary
+            </div>
+        </div>
+
+        <!-- Summary Stats -->
+        <div class="section">
+            <h2>📊 Application Statistics</h2>
+            <table>
+                <tr>
+                    <th>Metric</th>
+                    <th>Value</th>
+                </tr>
+                <tr>
+                    <td>Total Pages</td>
+                    <td>8 (home, onboarding, patient, calibration, test, summary, reports, report-detail)</td>
+                </tr>
+                <tr>
+                    <td>Total Components</td>
+                    <td>15+ custom + 70+ shadcn/ui components</td>
+                </tr>
+                <tr>
+                    <td>Test Duration</td>
+                    <td>~2 minutes (4 frequencies × 2 ears)</td>
+                </tr>
+                <tr>
+                    <td>Frequencies Tested</td>
+                    <td>4 (1000, 2000, 4000, 500 Hz)</td>
+                </tr>
+                <tr>
+                    <td>Data Storage</td>
+                    <td>IndexedDB (Browser local storage)</td>
+                </tr>
+                <tr>
+                    <td>Offline Support</td>
+                    <td>Yes (PWA + Service Worker)</td>
+                </tr>
+                <tr>
+                    <td>Export Formats</td>
+                    <td>PDF (multi-page with auto text wrapping)</td>
+                </tr>
+                <tr>
+                    <td>Algorithms</td>
+                    <td>Hughson-Westlake (1 reversal for speed)</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="note" style="margin-top: 40px;">
+            <strong>💡 Quick Reference:</strong>
+            <ul>
+                <li><strong>Entry Point:</strong> <code>app/layout.tsx</code> (Loads first)</li>
+                <li><strong>Home Page:</strong> <code>app/page.tsx</code></li>
+                <li><strong>Main Test Logic:</strong> <code>app/test/page.tsx</code> + <code>lib/hughson-westlake.ts</code></li>
+                <li><strong>State Management:</strong> <code>lib/store.ts</code> (Zustand)</li>
+                <li><strong>Data Persistence:</strong> <code>lib/storage.ts</code> (IndexedDB)</li>
+                <li><strong>Audio Playback:</strong> <code>lib/audio-engine.ts</code> (Web Audio API)</li>
+            </ul>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        mermaid.contentLoaded();
+    </script>
+</body>
+</html>
