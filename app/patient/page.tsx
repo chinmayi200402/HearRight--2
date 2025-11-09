@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-
+import { generateUUID } from "@/lib/utils"
 import { useState } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
@@ -32,7 +32,7 @@ export default function PatientPage() {
     e.preventDefault()
 
     const patient: Patient = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       firstName: formData.firstName,
       lastName: formData.lastName,
       dob: formData.dob,

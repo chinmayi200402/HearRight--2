@@ -20,51 +20,70 @@ export class PDFReportGenerator {
     light: rgb(0.97, 0.976, 0.984), // slate-50
   }
 
+  private static readonly PAGE_HEIGHT = 792
+  private static readonly PAGE_WIDTH = 612
+  private static readonly MARGIN = 60
+  private static readonly CONTENT_WIDTH = this.PAGE_WIDTH - this.MARGIN * 2
+
   static async generateReport(data: PDFReportData): Promise<Uint8Array> {
     const { patient, session } = data
 
-    // Create PDF document
     const pdfDoc = await PDFDocument.create()
-    const page = pdfDoc.addPage([612, 792]) // Letter size
-    const { width, height } = page.getSize()
-
-    // Load fonts
     const boldFont = await pdfDoc.embedFont(StandardFonts.HelveticaBold)
     const regularFont = await pdfDoc.embedFont(StandardFonts.Helvetica)
 
-    let yPosition = height - 60
+    let page = pdfDoc.addPage([this.PAGE_WIDTH, this.PAGE_HEIGHT])
+    let yPosition = this.PAGE_HEIGHT - 60
 
-    // Header
-    yPosition = this.drawHeader(page, boldFont, regularFont, yPosition, width)
+    // Page 1: Header, Patient Info, Test Summary
+    yPosition = this.drawHeader(page, boldFont, regularFont, yPosition)
+    yPosition = this.drawPatientInfo(page, boldFont, regularFont, patient, yPosition)
+    yPosition = this.drawTestSummary(page, boldFont, regularFont, session, yPosition)
 
-    // Patient Information
-    yPosition = this.drawPatientInfo(page, boldFont, regularFont, patient, yPosition, width)
+    // Check if we need a new page for threshold table
+    if (yPosition < 200) {
+      page = pdfDoc.addPage([this.PAGE_WIDTH, this.PAGE_HEIGHT])
+      yPosition = this.PAGE_HEIGHT - 60
+    }
 
-    // Test Summary
-    yPosition = this.drawTestSummary(page, boldFont, regularFont, session, yPosition, width)
+    yPosition = this.drawThresholdTable(page, boldFont, regularFont, session.thresholds, yPosition)
 
-    // Threshold Table
-    yPosition = this.drawThresholdTable(page, boldFont, regularFont, session.thresholds, yPosition, width)
+    // Check if we need a new page for audiogram
+    if (yPosition < 300) {
+      page = pdfDoc.addPage([this.PAGE_WIDTH, this.PAGE_HEIGHT])
+      yPosition = this.PAGE_HEIGHT - 60
+    }
 
-    // Audiogram Visualization
-    yPosition = this.drawAudiogram(page, boldFont, regularFont, session.thresholds, yPosition, width)
+    yPosition = this.drawAudiogram(page, boldFont, regularFont, session.thresholds, yPosition)
 
-    // PTA and Interpretation
-    yPosition = this.drawPTAResults(page, boldFont, regularFont, session.thresholds, yPosition, width)
+    // Check if we need a new page for PTA results
+    if (yPosition < 150) {
+      page = pdfDoc.addPage([this.PAGE_WIDTH, this.PAGE_HEIGHT])
+      yPosition = this.PAGE_HEIGHT - 60
+    }
 
-    // Clinical Notes
-    yPosition = this.drawClinicalNotes(page, boldFont, regularFont, yPosition, width)
+    yPosition = this.drawPTAResults(page, boldFont, regularFont, session.thresholds, yPosition)
 
-    // Footer with disclaimer
-    this.drawFooter(page, regularFont, width)
+    // Check if we need a new page for clinical notes
+    if (yPosition < 150) {
+      page = pdfDoc.addPage([this.PAGE_WIDTH, this.PAGE_HEIGHT])
+      yPosition = this.PAGE_HEIGHT - 60
+    }
+
+    yPosition = this.drawClinicalNotes(page, boldFont, regularFont, yPosition)
+
+    // Footer on all pages
+    const pageCount = pdfDoc.getPages().length
+    pdfDoc.getPages().forEach((pg, index) => {
+      this.drawFooter(pg, regularFont, index + 1, pageCount)
+    })
 
     return await pdfDoc.save()
   }
 
-  private static drawHeader(page: any, boldFont: any, regularFont: any, yPosition: number, width: number): number {
-    // HearRight Logo/Title
+  private static drawHeader(page: any, boldFont: any, regularFont: any, yPosition: number): number {
     page.drawText("HearRight", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 24,
       font: boldFont,
@@ -72,14 +91,13 @@ export class PDFReportGenerator {
     })
 
     page.drawText("App-Based Audiometer", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition - 20,
       size: 12,
       font: regularFont,
       color: this.COLORS.secondary,
     })
 
-    // Report title and date
     const reportDate = new Date().toLocaleDateString("en-US", {
       year: "numeric",
       month: "long",
@@ -87,7 +105,7 @@ export class PDFReportGenerator {
     })
 
     page.drawText("HEARING ASSESSMENT REPORT", {
-      x: width - 300,
+      x: this.PAGE_WIDTH - 300,
       y: yPosition,
       size: 16,
       font: boldFont,
@@ -95,17 +113,16 @@ export class PDFReportGenerator {
     })
 
     page.drawText(`Generated: ${reportDate}`, {
-      x: width - 300,
+      x: this.PAGE_WIDTH - 300,
       y: yPosition - 20,
       size: 10,
       font: regularFont,
       color: this.COLORS.secondary,
     })
 
-    // Horizontal line
     page.drawLine({
-      start: { x: 60, y: yPosition - 40 },
-      end: { x: width - 60, y: yPosition - 40 },
+      start: { x: this.MARGIN, y: yPosition - 40 },
+      end: { x: this.PAGE_WIDTH - this.MARGIN, y: yPosition - 40 },
       thickness: 1,
       color: this.COLORS.light,
     })
@@ -119,11 +136,9 @@ export class PDFReportGenerator {
     regularFont: any,
     patient: Patient,
     yPosition: number,
-    width: number,
   ): number {
-    // Section title
     page.drawText("PATIENT INFORMATION", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 14,
       font: boldFont,
@@ -132,11 +147,9 @@ export class PDFReportGenerator {
 
     yPosition -= 25
 
-    // Patient details in two columns
-    const leftColumn = 60
-    const rightColumn = width / 2 + 30
+    const leftColumn = this.MARGIN
+    const rightColumn = this.PAGE_WIDTH / 2 + 30
 
-    // Left column
     page.drawText("Name:", {
       x: leftColumn,
       y: yPosition,
@@ -169,7 +182,6 @@ export class PDFReportGenerator {
       color: this.COLORS.primary,
     })
 
-    // Right column
     if (patient.sex) {
       page.drawText("Sex:", {
         x: rightColumn,
@@ -215,11 +227,9 @@ export class PDFReportGenerator {
     regularFont: any,
     session: Session,
     yPosition: number,
-    width: number,
   ): number {
-    // Section title
     page.drawText("TEST SUMMARY", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 14,
       font: boldFont,
@@ -234,9 +244,8 @@ export class PDFReportGenerator {
       ? `${Math.floor(session.durationSec / 60)}:${(session.durationSec % 60).toString().padStart(2, "0")}`
       : "Unknown"
 
-    // Test details
     page.drawText(`Test Date: ${testDate}`, {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 10,
       font: regularFont,
@@ -276,11 +285,9 @@ export class PDFReportGenerator {
     regularFont: any,
     thresholds: Threshold[],
     yPosition: number,
-    width: number,
   ): number {
-    // Section title
     page.drawText("HEARING THRESHOLDS (dB HL)", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 14,
       font: boldFont,
@@ -289,12 +296,9 @@ export class PDFReportGenerator {
 
     yPosition -= 25
 
-    // Get unique frequencies
     const frequencies = [...new Set(thresholds.map((t) => t.freqHz))].sort((a, b) => a - b)
-
-    // Table headers
-    const tableX = 60
-    const colWidth = (width - 120) / (frequencies.length + 1)
+    const tableX = this.MARGIN
+    const colWidth = this.CONTENT_WIDTH / (frequencies.length + 1)
 
     page.drawText("Ear", {
       x: tableX,
@@ -316,7 +320,6 @@ export class PDFReportGenerator {
 
     yPosition -= 20
 
-    // Right ear row
     page.drawText("Right", {
       x: tableX,
       y: yPosition,
@@ -340,7 +343,6 @@ export class PDFReportGenerator {
 
     yPosition -= 15
 
-    // Left ear row
     page.drawText("Left", {
       x: tableX,
       y: yPosition,
@@ -362,11 +364,10 @@ export class PDFReportGenerator {
       })
     })
 
-    // Table border
     page.drawRectangle({
       x: tableX - 5,
       y: yPosition - 10,
-      width: width - 120,
+      width: this.CONTENT_WIDTH,
       height: 50,
       borderColor: this.COLORS.light,
       borderWidth: 1,
@@ -381,11 +382,9 @@ export class PDFReportGenerator {
     regularFont: any,
     thresholds: Threshold[],
     yPosition: number,
-    width: number,
   ): number {
-    // Section title
     page.drawText("AUDIOGRAM", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 14,
       font: boldFont,
@@ -394,13 +393,11 @@ export class PDFReportGenerator {
 
     yPosition -= 25
 
-    // Chart dimensions
     const chartX = 80
     const chartY = yPosition - 200
-    const chartWidth = width - 160
+    const chartWidth = this.PAGE_WIDTH - 160
     const chartHeight = 180
 
-    // Draw chart background
     page.drawRectangle({
       x: chartX,
       y: chartY,
@@ -411,16 +408,13 @@ export class PDFReportGenerator {
       borderWidth: 1,
     })
 
-    // Frequencies and hearing levels
     const frequencies = [500, 1000, 2000, 4000]
     const hearingLevels = [0, 10, 20, 30, 40, 50, 60, 70, 80, 90, 100, 110, 120]
 
-    // Draw grid lines and labels
-    // Vertical lines (frequencies)
+    // Draw grid and labels (unchanged)
     frequencies.forEach((freq, index) => {
       const x = chartX + (index * chartWidth) / (frequencies.length - 1)
 
-      // Grid line
       page.drawLine({
         start: { x, y: chartY },
         end: { x, y: chartY + chartHeight },
@@ -428,7 +422,6 @@ export class PDFReportGenerator {
         color: rgb(0.9, 0.9, 0.9),
       })
 
-      // Frequency label
       page.drawText(`${formatFrequency(freq)}`, {
         x: x - 15,
         y: chartY - 15,
@@ -438,11 +431,9 @@ export class PDFReportGenerator {
       })
     })
 
-    // Horizontal lines (hearing levels)
-    hearingLevels.forEach((level, index) => {
-      const y = chartY + chartHeight - (index * chartHeight) / (hearingLevels.length - 1)
+    hearingLevels.forEach((level) => {
+      const y = chartY + chartHeight - (level / 120) * chartHeight
 
-      // Grid line
       page.drawLine({
         start: { x: chartX, y },
         end: { x: chartX + chartWidth, y },
@@ -450,7 +441,6 @@ export class PDFReportGenerator {
         color: level % 20 === 0 ? rgb(0.8, 0.8, 0.8) : rgb(0.9, 0.9, 0.9),
       })
 
-      // Hearing level label
       page.drawText(`${level}`, {
         x: chartX - 20,
         y: y - 3,
@@ -460,7 +450,6 @@ export class PDFReportGenerator {
       })
     })
 
-    // Y-axis label
     page.drawText("Hearing Level (dB HL)", {
       x: 25,
       y: chartY + chartHeight / 2,
@@ -470,7 +459,6 @@ export class PDFReportGenerator {
       rotate: { type: "degrees", angle: 90 },
     })
 
-    // X-axis label
     page.drawText("Frequency (Hz)", {
       x: chartX + chartWidth / 2 - 40,
       y: chartY - 35,
@@ -479,27 +467,22 @@ export class PDFReportGenerator {
       color: this.COLORS.primary,
     })
 
-    // Plot thresholds
     const rightThresholds = thresholds.filter((t) => t.ear === "Right").sort((a, b) => a.freqHz - b.freqHz)
     const leftThresholds = thresholds.filter((t) => t.ear === "Left").sort((a, b) => a.freqHz - b.freqHz)
 
-    // Helper function to get coordinates
     const getCoordinates = (freq: number, threshold: number) => {
       const freqIndex = frequencies.indexOf(freq)
       if (freqIndex === -1) return null
-
       const x = chartX + (freqIndex * chartWidth) / (frequencies.length - 1)
       const y = chartY + chartHeight - (threshold / 120) * chartHeight
       return { x, y }
     }
 
-    // Draw right ear (red circles)
+    // Plot right ear
     let prevRightCoords = null
     rightThresholds.forEach((threshold) => {
       const coords = getCoordinates(threshold.freqHz, threshold.thresholdDb)
       if (!coords) return
-
-      // Draw circle (O symbol)
       page.drawCircle({
         x: coords.x,
         y: coords.y,
@@ -507,8 +490,6 @@ export class PDFReportGenerator {
         borderColor: this.COLORS.danger,
         borderWidth: 2,
       })
-
-      // Draw connecting line
       if (prevRightCoords) {
         page.drawLine({
           start: prevRightCoords,
@@ -521,13 +502,11 @@ export class PDFReportGenerator {
       prevRightCoords = coords
     })
 
-    // Draw left ear (blue X marks)
+    // Plot left ear
     let prevLeftCoords = null
     leftThresholds.forEach((threshold) => {
       const coords = getCoordinates(threshold.freqHz, threshold.thresholdDb)
       if (!coords) return
-
-      // Draw X symbol
       const size = 4
       page.drawLine({
         start: { x: coords.x - size, y: coords.y - size },
@@ -541,8 +520,6 @@ export class PDFReportGenerator {
         thickness: 2,
         color: this.COLORS.accent,
       })
-
-      // Draw connecting line
       if (prevLeftCoords) {
         page.drawLine({
           start: prevLeftCoords,
@@ -557,8 +534,6 @@ export class PDFReportGenerator {
 
     // Legend
     const legendY = chartY + chartHeight + 20
-
-    // Right ear legend
     page.drawCircle({
       x: chartX + 20,
       y: legendY,
@@ -574,7 +549,6 @@ export class PDFReportGenerator {
       color: this.COLORS.primary,
     })
 
-    // Left ear legend
     const leftLegendX = chartX + 120
     page.drawLine({
       start: { x: leftLegendX - 4, y: legendY - 4 },
@@ -605,11 +579,9 @@ export class PDFReportGenerator {
     regularFont: any,
     thresholds: Threshold[],
     yPosition: number,
-    width: number,
   ): number {
-    // Section title
     page.drawText("PURE TONE AVERAGE & INTERPRETATION", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 14,
       font: boldFont,
@@ -621,9 +593,8 @@ export class PDFReportGenerator {
     const rightPTA = calculatePTA(thresholds, "Right")
     const leftPTA = calculatePTA(thresholds, "Left")
 
-    // Right ear results
     page.drawText("Right Ear:", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 12,
       font: boldFont,
@@ -658,9 +629,8 @@ export class PDFReportGenerator {
 
     yPosition -= 20
 
-    // Left ear results
     page.drawText("Left Ear:", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 12,
       font: boldFont,
@@ -696,16 +666,9 @@ export class PDFReportGenerator {
     return yPosition - 30
   }
 
-  private static drawClinicalNotes(
-    page: any,
-    boldFont: any,
-    regularFont: any,
-    yPosition: number,
-    width: number,
-  ): number {
-    // Section title
+  private static drawClinicalNotes(page: any, boldFont: any, regularFont: any, yPosition: number): number {
     page.drawText("CLINICAL NOTES", {
-      x: 60,
+      x: this.MARGIN,
       y: yPosition,
       size: 14,
       font: boldFont,
@@ -730,7 +693,7 @@ export class PDFReportGenerator {
     notes.forEach((note) => {
       if (note) {
         page.drawText(note, {
-          x: 60,
+          x: this.MARGIN,
           y: yPosition,
           size: 9,
           font: regularFont,
@@ -743,30 +706,29 @@ export class PDFReportGenerator {
     return yPosition - 10
   }
 
-  private static drawFooter(page: any, regularFont: any, width: number): void {
+  private static drawFooter(page: any, regularFont: any, pageNum: number, totalPages: number): void {
     const footerY = 60
 
-    // Medical disclaimer
     page.drawRectangle({
-      x: 60,
+      x: this.MARGIN,
       y: footerY - 5,
-      width: width - 120,
+      width: this.CONTENT_WIDTH,
       height: 30,
-      color: rgb(1, 0.95, 0.8), // amber-50
-      borderColor: rgb(0.92, 0.73, 0.4), // amber-300
+      color: rgb(1, 0.95, 0.8),
+      borderColor: rgb(0.92, 0.73, 0.4),
       borderWidth: 1,
     })
 
     page.drawText("WARNING - MEDICAL DISCLAIMER", {
-      x: 70,
+      x: this.MARGIN + 10,
       y: footerY + 15,
       size: 8,
       font: regularFont,
-      color: rgb(0.6, 0.4, 0.1), // amber-800
+      color: rgb(0.6, 0.4, 0.1),
     })
 
     page.drawText("HearRight is a screening tool and not a substitute for a clinical diagnostic audiometer.", {
-      x: 70,
+      x: this.MARGIN + 10,
       y: footerY + 5,
       size: 8,
       font: regularFont,
@@ -774,16 +736,15 @@ export class PDFReportGenerator {
     })
 
     page.drawText("Results depend on device/headphone calibration and environment.", {
-      x: 70,
+      x: this.MARGIN + 10,
       y: footerY - 5,
       size: 8,
       font: regularFont,
       color: rgb(0.6, 0.4, 0.1),
     })
 
-    // Page number and generation info
-    page.drawText(`Page 1 of 1 • Generated by HearRight v1.0`, {
-      x: width - 200,
+    page.drawText(`Page ${pageNum} of ${totalPages} • Generated by HearRight v1.0`, {
+      x: this.PAGE_WIDTH - 200,
       y: 30,
       size: 8,
       font: regularFont,

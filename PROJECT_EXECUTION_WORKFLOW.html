@@ -1,0 +1,446 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HearRight - Execution Workflow Diagram</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            padding: 30px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        
+        h1, h2 {
+            color: #333;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        
+        .diagram-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+        }
+        
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .description {
+            color: #666;
+            line-height: 1.6;
+            margin-top: 15px;
+            font-size: 14px;
+        }
+        
+        .step-list {
+            list-style: none;
+            margin-top: 15px;
+        }
+        
+        .step-list li {
+            padding: 8px 0;
+            padding-left: 25px;
+            position: relative;
+            color: #555;
+        }
+        
+        .step-list li:before {
+            content: "→";
+            position: absolute;
+            left: 0;
+            color: #667eea;
+            font-weight: bold;
+        }
+        
+        .legend {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+            padding: 15px;
+            background: white;
+            border-radius: 8px;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .legend-color {
+            width: 20px;
+            height: 20px;
+            border-radius: 4px;
+        }
+        
+        code {
+            background: #f0f0f0;
+            padding: 2px 6px;
+            border-radius: 3px;
+            font-family: 'Courier New', monospace;
+            color: #d63384;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎧 HearRight - Complete Execution Workflow</h1>
+        
+        <!-- Setup Workflow -->
+        <div class="diagram-section">
+            <h2>1️⃣ Installation & Setup Workflow</h2>
+            <div class="mermaid">
+                graph TD
+                    A["📁 Project Directory<br/>HearRight/"] --> B["🔧 Install Dependencies<br/>npm install"]
+                    B --> C{"✓ Node Modules<br/>Ready?"}
+                    C -->|No| D["🚨 Fix Errors<br/>See Troubleshooting"]
+                    D --> B
+                    C -->|Yes| E["✓ Verify Installation<br/>node --version<br/>npm --version"]
+                    E --> F["✅ Ready for Development"]
+            </div>
+            <div class="description">
+                <strong>Setup Steps:</strong>
+                <ol style="margin-left: 20px; margin-top: 10px;">
+                    <li>Navigate to project directory: <code>cd HearRight</code></li>
+                    <li>Install dependencies: <code>npm install</code></li>
+                    <li>Verify Node v18+: <code>node --version</code></li>
+                    <li>Start development: <code>npm run dev</code></li>
+                </ol>
+            </div>
+        </div>
+        
+        <!-- Application Runtime -->
+        <div class="diagram-section">
+            <h2>2️⃣ Application Runtime & Execution</h2>
+            <div class="mermaid">
+                graph TD
+                    A["🚀 npm run dev"] --> B["📦 Next.js Dev Server<br/>Port 3000"]
+                    B --> C["🔄 Module Compilation"]
+                    C --> D["✓ App Ready<br/>http://localhost:3000"]
+                    D --> E["🌐 Browser Opens"]
+                    E --> F["🏠 Home Page Loads"]
+                    F --> G["✅ Application Running"]
+                    
+                    style A fill:#4CAF50,color:#fff
+                    style G fill:#4CAF50,color:#fff
+                    style D fill:#2196F3,color:#fff
+            </div>
+            <div class="description">
+                Development server runs with hot reloading. Any file changes automatically refresh the browser.
+                <br><strong>Stop with:</strong> <code>Ctrl + C</code>
+            </div>
+        </div>
+        
+        <!-- Data Flow During Test -->
+        <div class="diagram-section">
+            <h2>3️⃣ User Interaction & Data Flow</h2>
+            <div class="mermaid">
+                graph LR
+                    U["👤 User Input"] --> P["📝 Patient Page"]
+                    P --> |Register| O["🎧 Onboarding"]
+                    O --> |Calibrate| C["⚙️ Calibration"]
+                    C --> |Setup| T["🔊 Test Page"]
+                    T --> |Respond| A["🧠 Algorithm<br/>Hughson-Westlake"]
+                    A --> |Process| S["📊 State Store<br/>Zustand"]
+                    S --> |Update| R["📈 Results"]
+                    R --> |Display| V["📉 Audiogram View"]
+                    V --> |Export| PDF["📄 PDF Report"]
+                    
+                    style U fill:#FF9800
+                    style S fill:#9C27B0,color:#fff
+                    style PDF fill:#4CAF50,color:#fff
+            </div>
+            <div class="description">
+                Complete test workflow from patient registration to PDF report generation.
+            </div>
+        </div>
+        
+        <!-- Component Architecture -->
+        <div class="diagram-section">
+            <h2>4️⃣ Component Architecture & Dependencies</h2>
+            <div class="mermaid">
+                graph TB
+                    subgraph "Pages (App Router)"
+                        P1["page.tsx<br/>Home"]
+                        P2["patient/page.tsx"]
+                        P3["test/page.tsx"]
+                        P4["summary/page.tsx"]
+                    end
+                    
+                    subgraph "Components"
+                        C1["TestController"]
+                        C2["AudiogramChart"]
+                        C3["ResponsePad"]
+                        C4["ThresholdTable"]
+                    end
+                    
+                    subgraph "Libraries"
+                        L1["audio-engine.ts<br/>Web Audio API"]
+                        L2["hughson-westlake.ts<br/>Algorithm"]
+                        L3["pdf-generator.ts"]
+                        L4["storage.ts<br/>IndexedDB"]
+                    end
+                    
+                    subgraph "State & Utils"
+                        S1["zustand store<br/>State Management"]
+                        U1["utils.ts<br/>generateUUID"]
+                        U2["types.ts<br/>Interfaces"]
+                    end
+                    
+                    P3 --> C1
+                    C1 --> L1
+                    C1 --> L2
+                    P4 --> C2
+                    P4 --> L3
+                    C1 --> S1
+                    L2 --> S1
+                    L4 --> S1
+                    C1 --> U1
+                    C1 --> U2
+                    
+                    style P1 fill:#FF6B6B
+                    style P2 fill:#FF6B6B
+                    style P3 fill:#FF6B6B
+                    style P4 fill:#FF6B6B
+                    style S1 fill:#9C27B0,color:#fff
+            </div>
+            <div class="description">
+                Component hierarchy showing how pages, components, and libraries interact through state management.
+            </div>
+        </div>
+        
+        <!-- State Management Flow -->
+        <div class="diagram-section">
+            <h2>5️⃣ State Management Flow (Zustand)</h2>
+            <div class="mermaid">
+                graph TD
+                    A["Action: Start Test"] --> B["Update Store<br/>setCurrentPatient"]
+                    B --> C["Store State<br/>currentPatient"]
+                    C --> D["Components Subscribe"]
+                    D --> |Re-render| E["Test Controller"]
+                    D --> |Re-render| F["Response Pad"]
+                    D --> |Re-render| G["Test Progress"]
+                    
+                    A2["Action: Add Response"] --> B2["Update Store<br/>addThreshold"]
+                    B2 --> C2["Store State<br/>thresholds"]
+                    C2 --> D2["Components Subscribe"]
+                    D2 --> H["Audiogram Updates"]
+                    
+                    style B fill:#4CAF50,color:#fff
+                    style B2 fill:#4CAF50,color:#fff
+                    style C fill:#2196F3,color:#fff
+                    style C2 fill:#2196F3,color:#fff
+            </div>
+            <div class="description">
+                Zustand manages global state. Components subscribe to store updates and re-render automatically.
+            </div>
+        </div>
+        
+        <!-- PDF Generation Flow -->
+        <div class="diagram-section">
+            <h2>6️⃣ PDF Generation & Export Workflow</h2>
+            <div class="mermaid">
+                graph TD
+                    A["User Clicks<br/>Generate PDF"] --> B["Collect Data<br/>Patient + Session"]
+                    B --> C["Create PDF Document"]
+                    C --> D["Add Header &<br/>Patient Info"]
+                    D --> E["Add Test Summary"]
+                    E --> F{"Need New<br/>Page?"}
+                    F -->|Yes| G["Add New Page"]
+                    G --> H["Add Threshold Table"]
+                    F -->|No| H
+                    H --> I{"Need New<br/>Page?"}
+                    I -->|Yes| J["Add New Page"]
+                    J --> K["Add Audiogram Chart"]
+                    I -->|No| K
+                    K --> L["Add PTA Results"]
+                    L --> M["Add Clinical Notes"]
+                    M --> N["Add Footer to All Pages"]
+                    N --> O["Generate PDF Bytes"]
+                    O --> P["Download/Print"]
+                    
+                    style O fill:#4CAF50,color:#fff
+                    style P fill:#4CAF50,color:#fff
+                    style F fill:#FFC107
+                    style I fill:#FFC107
+            </div>
+            <div class="description">
+                PDF generation with automatic page breaks for text wrapping. Multi-page support with page numbers and consistent footers.
+            </div>
+        </div>
+        
+        <!-- Complete User Journey -->
+        <div class="diagram-section">
+            <h2>7️⃣ Complete User Journey Timeline</h2>
+            <div class="mermaid">
+                graph LR
+                    A["🏠 HOME<br/>0 min"] --> B["👤 REGISTER<br/>1-2 min"]
+                    B --> C["🎧 SETUP<br/>2-3 min"]
+                    C --> D["⚙️ CALIBRATE<br/>3-5 min"]
+                    D --> E["🔊 TEST<br/>5-7 min"]
+                    E --> F["📈 RESULTS<br/>7-8 min"]
+                    F --> G["📄 PDF<br/>8-9 min"]
+                    G --> H["✅ COMPLETE<br/>9 min"]
+                    
+                    style A fill:#2196F3,color:#fff
+                    style H fill:#4CAF50,color:#fff
+            </div>
+            <div class="description">
+                <strong>Total Test Duration:</strong> ~9 minutes (including registration)
+                <br><strong>Pure Tone Test Only:</strong> ~2 minutes
+                <br><strong>PDF Generation:</strong> ~1 second
+            </div>
+        </div>
+        
+        <!-- Build & Deployment -->
+        <div class="diagram-section">
+            <h2>8️⃣ Production Build & Deployment Workflow</h2>
+            <div class="mermaid">
+                graph TD
+                    A["npm run build"] --> B["Optimize & Minify"]
+                    B --> C["Generate Static Files"]
+                    C --> D[".next Folder Created"]
+                    D --> E["npm start"]
+                    E --> F["Production Server<br/>Port 3000"]
+                    F --> G["🚀 Ready for Deploy"]
+                    G --> H{"Deploy Target?"}
+                    H -->|Vercel| I["vercel deploy"]
+                    H -->|Docker| J["docker build & run"]
+                    H -->|VPS| K["Copy to server"]
+                    I --> L["✅ Live"]
+                    J --> L
+                    K --> L
+                    
+                    style F fill:#2196F3,color:#fff
+                    style L fill:#4CAF50,color:#fff
+            </div>
+            <div class="description">
+                Production build optimizes the app for deployment. Serves minified code for better performance.
+            </div>
+        </div>
+        
+        <!-- Folder Tree with Execution -->
+        <div class="diagram-section">
+            <h2>9️⃣ Project Folder Structure</h2>
+            <pre style="background: #f5f5f5; padding: 15px; border-radius: 8px; overflow-x: auto; font-size: 12px;">
+HearRight/
+├── app/                                    # Next.js 15 App Router
+│   ├── page.tsx                           # 🏠 Home page
+│   ├── layout.tsx                         # Root layout + PWA config
+│   ├── globals.css                        # Global styles
+│   ├── patient/page.tsx                   # 👤 Patient registration
+│   ├── onboarding/page.tsx                # 🎧 Environment check
+│   ├── calibration/page.tsx               # ⚙️  Device calibration
+│   ├── test/page.tsx                      # 🔊 Main hearing test
+│   ├── summary/page.tsx                   # 📈 Results & PDF
+│   └── reports/
+│       ├── page.tsx                       # 📊 Reports list
+│       └── [id]/page.tsx                  # 📄 Report details
+│
+├── components/                             # React components
+│   ├── ui/                                # shadcn UI library
+│   ├── test-controller.tsx                # 🧠 Test logic
+│   ├── audiogram-chart.tsx                # 📉 Hearing chart
+│   ├── response-pad.tsx                   # ✓ Response interface
+│   ├── pwa-install.tsx                    # 📱 PWA installer
+│   └── other components...
+│
+├── lib/                                   # Utilities & business logic
+│   ├── utils.ts                           # Helper functions (generateUUID)
+│   ├── types.ts                           # TypeScript interfaces
+│   ├── store.ts                           # ⚙️  Zustand state
+│   ├── audio-engine.ts                    # 🔊 Web Audio API
+│   ├── hughson-westlake.ts                # 🧮 Audiometric algorithm
+│   ├── pdf-generator.ts                   # 📄 PDF creation
+│   ├── storage.ts                         # 💾 IndexedDB
+│   └── other utilities...
+│
+├── public/                                # Static assets
+│   ├── sw.js                              # 🔄 Service worker
+│   ├── manifest.json                      # 📋 PWA manifest
+│   ├── icon-192.png                       # 🎨 App icon
+│   └── other assets...
+│
+├── next.config.mjs                        # ⚙️  Next.js config
+├── tailwind.config.js                     # 🎨 Tailwind config
+├── tsconfig.json                          # 📝 TypeScript config
+├── package.json                           # 📦 Dependencies
+└── README.md                              # 📖 Documentation
+            </pre>
+        </div>
+        
+        <!-- Execution Summary -->
+        <div class="diagram-section">
+            <h2>🎯 Quick Reference Summary</h2>
+            <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+                <tr style="background: #f5f5f5;">
+                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Action</th>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Command</th>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Time</th>
+                    <th style="padding: 10px; text-align: left; border: 1px solid #ddd;">Purpose</th>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Install</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><code>npm install</code></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">~5 min</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Setup dependencies</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Dev Server</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><code>npm run dev</code></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">~3 sec</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Development mode</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Build</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><code>npm run build</code></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">~2-5 min</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Production build</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Start Prod</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><code>npm start</code></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">~2 sec</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Run production</td>
+                </tr>
+                <tr>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Lint</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;"><code>npm run lint</code></td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">~10 sec</td>
+                    <td style="padding: 10px; border: 1px solid #ddd;">Code quality check</td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    
+    <script>
+        mermaid.contentLoaded();
+    </script>
+</body>
+</html>

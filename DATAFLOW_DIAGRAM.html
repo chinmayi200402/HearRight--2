@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HearRight - Data Flow Diagram</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.6.1/mermaid.min.js"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 40px 20px;
+        }
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 40px;
+            text-align: center;
+        }
+        .header h1 {
+            font-size: 32px;
+            margin-bottom: 10px;
+        }
+        .header p {
+            font-size: 16px;
+            opacity: 0.9;
+        }
+        .content {
+            padding: 40px;
+        }
+        .section {
+            margin-bottom: 50px;
+        }
+        .section h2 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 24px;
+            border-left: 4px solid #667eea;
+            padding-left: 15px;
+        }
+        .mermaid {
+            display: flex;
+            justify-content: center;
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+        .description {
+            background: #f0f4ff;
+            border-left: 4px solid #667eea;
+            padding: 15px 20px;
+            margin-top: 15px;
+            border-radius: 4px;
+            color: #333;
+            line-height: 1.6;
+        }
+        .footer {
+            background: #f8f9fa;
+            padding: 20px 40px;
+            text-align: center;
+            color: #666;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>HearRight - Application Data Flow</h1>
+            <p>End-to-End Architecture & Component Interaction Diagram</p>
+        </div>
+
+        <div class="content">
+            <!-- System Architecture -->
+            <div class="section">
+                <h2>1. System Architecture</h2>
+                <div class="mermaid">
+                    graph TB
+                        subgraph UI["🎨 User Interface Layer"]
+                            HOME["Home Page<br/>(Landing)"]
+                            PATIENT["Patient Info<br/>(Registration)"]
+                            ONBOARD["Onboarding<br/>(Setup)"]
+                            CALIB["Calibration<br/>(Device Config)"]
+                            TEST["Test<br/>(Audiometry)"]
+                            SUMMARY["Summary<br/>(Results)"]
+                            REPORTS["Reports<br/>(History)"]
+                        end
+
+                        subgraph COMP["🧩 Components Layer"]
+                            FORM["Form<br/>Components"]
+                            AUDIO["Audio<br/>Controls"]
+                            CHART["Chart<br/>Visualization"]
+                            RESP["Response<br/>Pad"]
+                        end
+
+                        subgraph LOGIC["⚙️ Business Logic"]
+                            ENGINE["Audio<br/>Engine"]
+                            ALGO["Hughson-<br/>Westlake<br/>Algorithm"]
+                            CALC["Calculations<br/>&nbsp;&Utilities"]
+                            PDF["PDF<br/>Generator"]
+                        end
+
+                        subgraph DATA["💾 Data Storage"]
+                            ZUSTAND["Zustand<br/>State Store"]
+                            INDEXDB["IndexedDB<br/>(Persistent)"]
+                            LOCALSTOR["localStorage<br/>(Calibration)"]
+                        end
+
+                        HOME --> PATIENT
+                        PATIENT --> ONBOARD
+                        ONBOARD --> CALIB
+                        CALIB --> TEST
+                        TEST --> SUMMARY
+                        SUMMARY --> REPORTS
+                        
+                        PATIENT --> FORM
+                        FORM --> ZUSTAND
+                        
+                        TEST --> AUDIO
+                        TEST --> RESP
+                        RESP --> ALGO
+                        ALGO --> CALC
+                        
+                        SUMMARY --> CHART
+                        SUMMARY --> PDF
+                        
+                        AUDIO --> ENGINE
+                        ENGINE --> LOCALSTOR
+                        
+                        CALC --> ZUSTAND
+                        ZUSTAND --> INDEXDB
+                        PDF --> INDEXDB
+
+                        style HOME fill:#667eea,stroke:#333,stroke-width:2px,color:#fff
+                        style UI fill:#e3f2fd,stroke:#667eea,stroke-width:2px
+                        style COMP fill:#f3e5f5,stroke:#764ba2,stroke-width:2px
+                        style LOGIC fill:#fff3e0,stroke:#ff9800,stroke-width:2px
+                        style DATA fill:#e8f5e9,stroke:#4caf50,stroke-width:2px
+                </div>
+                <div class="description">
+                    <strong>Overview:</strong> Data flows from user interface through React components to business logic layers, finally persisting in IndexedDB and localStorage. State is centralized via Zustand for consistency across the app.
+                </div>
+            </div>
+
+            <!-- Complete Test Session Flow -->
+            <div class="section">
+                <h2>2. Pure Tone Audiometry Test Flow</h2>
+                <div class="mermaid">
+                    graph LR
+                        START["👤 User Starts"] --> PATIENT_INFO["📋 Patient Info<br/>Name, DOB, ID"]
+                        PATIENT_INFO --> VALIDATE["✓ Validate<br/>& generateUUID"]
+                        VALIDATE --> STORE1["💾 Zustand<br/>+ IndexedDB"]
+                        
+                        STORE1 --> ENV["🔇 Environment<br/>Check"]
+                        ENV --> QUIET["Quiet Space?"]
+                        QUIET -->|Yes| CALIB_START["🎚️ Calibration"]
+                        CALIB_START --> SELECT_DEVICE["Select Audio<br/>Device"]
+                        SELECT_DEVICE --> TEST_AUDIO["🔊 Test L/R<br/>Channels"]
+                        TEST_AUDIO --> USER_ADJ["User Adjusts<br/>Reference Vol"]
+                        USER_ADJ --> SAVE_CALIB["💾 Save Profile<br/>localStorage"]
+                        
+                        SAVE_CALIB --> TEST_START["▶️ Test Begins"]
+                        TEST_START --> FREQ_LOOP["For Each Frequency<br/>500,1K,2K,4K Hz"]
+                        
+                        FREQ_LOOP --> EAR_LOOP["For Each Ear<br/>Right, Left"]
+                        EAR_LOOP --> PLAY["🎵 Play Tone<br/>Web Audio API"]
+                        PLAY --> LISTEN["👂 User Listens"]
+                        LISTEN --> RESPONSE["Press if<br/>heard"]
+                        RESPONSE --> ALGO["📊 Hughson-Westlake<br/>Algorithm"]
+                        ALGO --> CHECK["Converged?"]
+                        
+                        CHECK -->|No| NEXT_LEVEL["🔄 Next Level<br/>Up 5dB or Down 10dB"]
+                        NEXT_LEVEL --> PLAY
+                        
+                        CHECK -->|Yes| STORE_THRESH["💾 Store<br/>Threshold"]
+                        STORE_THRESH --> ALL_DONE["All Freq<br/>Complete?"]
+                        
+                        ALL_DONE -->|No| EAR_LOOP
+                        ALL_DONE -->|Yes| CALC_PTA["📈 Calculate PTA<br/>& Interpretation"]
+                        
+                        CALC_PTA --> GEN_PDF["📄 Generate PDF<br/>Multi-page Report"]
+                        GEN_PDF --> RESULTS["✨ Display Results<br/>& Audiogram"]
+                        RESULTS --> END["✓ Complete"]
+                        
+                        style START fill:#667eea,color:#fff
+                        style END fill:#4caf50,color:#fff
+                        style ALGO fill:#ff9800,color:#fff
+                        style TEST_START fill:#2196f3,color:#fff
+                </div>
+                <div class="description">
+                    <strong>Test Sequence:</strong> From patient registration through calibration to the complete audiometry test. The Hughson-Westlake algorithm iterates until threshold convergence at each frequency for both ears.
+                </div>
+            </div>
+
+            <!-- Component State Interaction -->
+            <div class="section">
+                <h2>3. Component & State Interaction</h2>
+                <div class="mermaid">
+                    graph TB
+                        subgraph APP["App State<br/>(Zustand Store)"]
+                            PATIENT["currentPatient"]
+                            CALIB["currentCalibration"]
+                            SESSION["currentSession"]
+                            THRESH["thresholds[]"]
+                        end
+
+                        subgraph PAGES["Pages"]
+                            P1["patient/page.tsx"]
+                            P2["calibration/page.tsx"]
+                            P3["test/page.tsx"]
+                            P4["summary/page.tsx"]
+                            P5["reports/page.tsx"]
+                        end
+
+                        subgraph COMP["Components"]
+                            C1["ResponsePad"]
+                            C2["TestController"]
+                            C3["AudiogramChart"]
+                            C4["HearingSummary"]
+                        end
+
+                        subgraph LOGIC["Services"]
+                            L1["AudioEngine"]
+                            L2["CalibrationManager"]
+                            L3["Hughson-Westlake<br/>Algorithm"]
+                            L4["PDFGenerator"]
+                        end
+
+                        subgraph STORAGE["Storage"]
+                            S1["IndexedDB<br/>Patients,Sessions"]
+                            S2["localStorage<br/>Calibrations"]
+                        end
+
+                        P1 -->|setCurrentPatient| PATIENT
+                        P1 -->|Write| S1
+                        
+                        P2 -->|setCurrentCalibration| CALIB
+                        P2 -->|Read/Write| L2
+                        P2 -->|Save| S2
+                        
+                        P3 -->|setCurrentSession| SESSION
+                        P3 -->|addThreshold| THRESH
+                        P3 -->|Uses| C1
+                        P3 -->|Uses| C2
+                        
+                        C1 -->|Input| C2
+                        C2 -->|Calls| L1
+                        C2 -->|Calls| L3
+                        L3 -->|Updates| THRESH
+                        
+                        P4 -->|Read| SESSION
+                        P4 -->|Read| THRESH
+                        P4 -->|Uses| C3
+                        P4 -->|Uses| C4
+                        C3 -->|Visualize| THRESH
+                        C4 -->|Calls| L4
+                        L4 -->|Generates| P1
+                        
+                        P5 -->|Query| S1
+                        P5 -->|Query| S2
+                        
+                        SESSION -->|Write| S1
+                        THRESH -->|Persist| S1
+
+                        style PATIENT fill:#667eea,color:#fff
+                        style CALIB fill:#764ba2,color:#fff
+                        style SESSION fill:#2196f3,color:#fff
+                        style THRESH fill:#ff9800,color:#fff
+                </div>
+                <div class="description">
+                    <strong>State Flow:</strong> Each page component manages specific state through Zustand, triggering service layer operations and ultimately persisting data to IndexedDB or localStorage. Components access shared state reactively.
+                </div>
+            </div>
+
+            <!-- Audio Processing Pipeline -->
+            <div class="section">
+                <h2>4. Audio Processing & Threshold Detection</h2>
+                <div class="mermaid">
+                    graph LR
+                        USER_INPUT["👂 User Presses<br/>When Hears Tone"]
+                        --> RESPONSE["Response<br/>Recorded"]
+                        
+                        RESPONSE --> HW_ALGO["Hughson-Westlake<br/>Algorithm"]
+                        
+                        HW_ALGO --> CHECK_REVERSAL["Check:<br/>Reversal?"]
+                        
+                        CHECK_REVERSAL -->|First Reversal| INC_COUNT["Increment<br/>Reversal Counter"]
+                        
+                        INC_COUNT --> CHECK_COMPLETE["Complete?<br/>(1 Reversal)"]
+                        
+                        CHECK_COMPLETE -->|No| NEXT_INTENSITY["Calculate Next<br/>Intensity:<br/>• Last Response?<br/>• Up 5dB if No<br/>• Down 10dB if Yes"]
+                        
+                        NEXT_INTENSITY --> PLAY_NEXT["🎵 Play Next<br/>Tone"]
+                        PLAY_NEXT --> WAIT["⏳ Wait for<br/>Response"]
+                        WAIT --> USER_INPUT
+                        
+                        CHECK_COMPLETE -->|Yes| CALC_THRESHOLD["📊 Calculate<br/>Threshold:<br/>Mean of Last<br/>Intensities"]
+                        
+                        CALC_THRESHOLD --> STORE["💾 Store<br/>Threshold"]
+                        
+                        STORE --> NEXT_FREQ["Next Frequency<br/>or Ear?"]
+                        
+                        style USER_INPUT fill:#2196f3,color:#fff
+                        style HW_ALGO fill:#ff9800,color:#fff
+                        style CALC_THRESHOLD fill:#4caf50,color:#fff
+                        style NEXT_FREQ fill:#667eea,color:#fff
+                </div>
+                <div class="description">
+                    <strong>Algorithm:</strong> Implements down-10/up-5 staircase method. When user responds positively (hears tone), volume decreases 10dB. When negative, increases 5dB. After 1 reversal, threshold is calculated and stored.
+                </div>
+            </div>
+
+            <!-- PDF Generation Flow -->
+            <div class="section">
+                <h2>5. Multi-Page PDF Generation Flow</h2>
+                <div class="mermaid">
+                    graph TB
+                        START["📊 PDFReportGenerator<br/>Started"] --> PAGE1["📄 Page 1:<br/>Header & Patient Info"]
+                        
+                        PAGE1 --> PAGE1_HEADER["• HearRight Logo<br/>• Report Title<br/>• Generated Date"]
+                        PAGE1_HEADER --> PAGE1_PATIENT["• Patient Name<br/>• DOB & Age<br/>• Sex & Patient ID"]
+                        
+                        PAGE1_PATIENT --> PAGE1_SUMMARY["• Test Date/Time<br/>• Duration<br/>• Frequencies Tested"]
+                        
+                        PAGE1_SUMMARY --> CHECK1["Space for<br/>Next Content?"]
+                        
+                        CHECK1 -->|No| PAGE2["📄 Page 2:<br/>Thresholds & Audiogram"]
+                        CHECK1 -->|Yes| PAGE1_CONTENT
+                        
+                        PAGE1_CONTENT["Continue on<br/>Page 1"]
+                        
+                        PAGE2 --> THRESH_TABLE["• Threshold Table<br/>  - Right Ear Row<br/>  - Left Ear Row<br/>  - All Frequencies"]
+                        
+                        THRESH_TABLE --> AUDIOGRAM["• Audiogram Chart<br/>  - Grid & Axes<br/>  - Right Ear (Red O)<br/>  - Left Ear (Blue X)<br/>  - Legend"]
+                        
+                        AUDIOGRAM --> CHECK2["Space for<br/>Next Content?"]
+                        
+                        CHECK2 -->|No| PAGE3["📄 Page 3:<br/>PTA Results & Notes"]
+                        CHECK2 -->|Yes| PAGE2_CONTENT["Continue on<br/>Page 2"]
+                        
+                        PAGE3 --> PTA_RESULTS["• Right Ear PTA<br/>  - dB HL Value<br/>  - Classification<br/>  - Interpretation<br/>• Left Ear PTA<br/>  - Same Info"]
+                        
+                        PTA_RESULTS --> CLINICAL["• Clinical Notes<br/>  - Methodology<br/>  - Test Environment<br/>  - Reliability Info<br/>  - Symbol Legend"]
+                        
+                        CLINICAL --> FOOTER["• Medical Disclaimer<br/>• Page Numbers<br/>• Generated By Line"]
+                        
+                        FOOTER --> COMPILE["🔗 Compile All Pages"]
+                        
+                        COMPILE --> OUTPUT["📥 Output<br/>Uint8Array"]
+                        
+                        OUTPUT --> END["✓ Ready for<br/>Download/Print"]
+                        
+                        style START fill:#667eea,color:#fff
+                        style PAGE1 fill:#2196f3,color:#fff
+                        style PAGE2 fill:#9c27b0,color:#fff
+                        style PAGE3 fill:#f44336,color:#fff
+                        style END fill:#4caf50,color:#fff
+                        style FOOTER fill:#ff9800,color:#fff
+                </div>
+                <div class="description">
+                    <strong>Multi-Page Strategy:</strong> PDF is generated with automatic page breaks when content exceeds available space. Each section (patient info, thresholds, audiogram, results, notes) creates new pages as needed. Footer includes page numbers and disclaimer on all pages.
+                </div>
+            </div>
+
+            <!-- Error Handling -->
+            <div class="section">
+                <h2>6. Error Handling & Recovery Flow</h2>
+                <div class="mermaid">
+                    graph TB
+                        TRIGGER["🔴 Error Occurs<br/>in Component"]
+                        
+                        --> TRY["Try-Catch Block"]
+                        
+                        TRY --> LOG["📝 Log Error<br/>to Console"]
+                        
+                        LOG --> DISPLAY["🎯 Display Error<br/>to User<br/>• Toast<br/>• Modal<br/>• Inline Message"]
+                        
+                        DISPLAY --> ROLLBACK["↩️ Rollback<br/>Component State"]
+                        
+                        ROLLBACK --> PERSIST["❌ Do NOT<br/>Persist to DB"]
+                        
+                        PERSIST --> OPTIONS["User Options:<br/>• Retry Action<br/>• Go to Home<br/>• Clear Data"]
+                        
+                        OPTIONS -->|Retry| TRIGGER
+                        OPTIONS -->|Home| REDIRECT["🏠 Route to<br/>Home Page"]
+                        OPTIONS -->|Clear| RESET["🗑️ Reset State<br/>& Storage"]
+                        
+                        REDIRECT --> END["✓ User Can<br/>Start Over"]
+                        RESET --> END
+                        
+                        style TRIGGER fill:#f44336,color:#fff
+                        style LOG fill:#ff9800,color:#fff
+                        style DISPLAY fill:#ff5722,color:#fff
+                        style ROLLBACK fill:#9c27b0,color:#fff
+                        style END fill:#4caf50,color:#fff
+                </div>
+                <div class="description">
+                    <strong>Safety:</strong> All operations wrap in try-catch blocks. Errors are logged, displayed to user, and state is rolled back. No corrupted data is persisted to database. Users get clear recovery options.
+                </div>
+            </div>
+
+        </div>
+
+        <div class="footer">
+            <p><strong>HearRight v1.0</strong> • Data Flow Architecture Diagram • November 2025</p>
+            <p>🎵 Professional App-Based Audiometer | 📊 Pure Tone Audiometry | 📱 PWA Compatible</p>
+        </div>
+    </div>
+
+    <script>
+        mermaid.initialize({ startOnLoad: true, theme: 'default' });
+        mermaid.contentLoaded();
+    </script>
+</body>
+</html>

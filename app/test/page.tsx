@@ -8,6 +8,7 @@ import Link from "next/link"
 import { useAppStore } from "@/lib/store"
 import { TestController } from "@/components/test-controller"
 import type { Session, Threshold } from "@/lib/types"
+import { generateUUID } from "@/lib/utils"
 
 export default function TestPage() {
   const router = useRouter()
@@ -25,7 +26,7 @@ export default function TestPage() {
 
     // Initialize session
     const newSession: Session = {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       patientId: currentPatient.id,
       calibrationId: currentCalibration.id,
       startedAt: new Date().toISOString(),

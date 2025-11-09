@@ -1,4 +1,5 @@
 import type { CalibrationProfile, TestFrequency } from "./types"
+import { generateUUID } from "./utils"
 
 export class CalibrationManager {
   private static readonly STORAGE_KEY = "hearright-calibrations"
@@ -36,14 +37,14 @@ export class CalibrationManager {
     const defaultFrequencies: TestFrequency[] = [250, 500, 1000, 2000, 3000, 4000, 6000, 8000]
 
     return {
-      id: crypto.randomUUID(),
+      id: generateUUID(),
       deviceLabel,
       createdAt: new Date().toISOString(),
       points: defaultFrequencies.map((freq) => ({
         freqHz: freq,
-        adjustDb: 0, // Start with no adjustment
+        adjustDb: 0,
       })),
-      outputGain: 0, // Start with no master gain adjustment
+      outputGain: 0,
     }
   }
 
