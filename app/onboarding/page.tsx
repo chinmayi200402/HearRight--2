@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
@@ -12,6 +12,12 @@ export default function OnboardingPage() {
   const router = useRouter()
   const { currentPatient } = useAppStore()
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set())
+
+  useEffect(() => {
+    if (!currentPatient) {
+      router.push("/patient")
+    }
+  }, [currentPatient, router])
 
   const requirements = [
     {
@@ -51,7 +57,6 @@ export default function OnboardingPage() {
   }
 
   if (!currentPatient) {
-    router.push("/patient")
     return null
   }
 
