@@ -1,5 +1,5 @@
 import type React from "react"
-import type { Metadata } from "next"
+import type { Metadata, Viewport } from "next"
 import { GeistSans } from "geist/font/sans"
 import { GeistMono } from "geist/font/mono"
 import { PWAInstall } from "@/components/pwa-install"
@@ -11,8 +11,14 @@ export const metadata: Metadata = {
   description: "Screen hearing in minutes. Anywhere. Professional audiometry testing made accessible.",
   generator: "HearRight",
   manifest: "/manifest.json",
+}
+
+export const viewport: Viewport = {
   themeColor: "#0f172a",
-  viewport: "width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no",
+  width: "device-width",
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
 }
 
 export default function RootLayout({
@@ -38,8 +44,8 @@ html {
 
         {/* Medical disclaimer footer */}
         <footer className="fixed bottom-0 left-0 right-0 bg-amber-50 border-t border-amber-200 px-4 py-2 text-xs text-amber-800 text-center">
-          ⚠️ HearRight is a screening tool and not a substitute for a clinical diagnostic audiometer. Results depend on
-          device/headphone calibration and environment.
+          WARNING - MEDICAL DISCLAIMER: HearRight is a screening tool and not a substitute for a clinical diagnostic
+          audiometer. Results depend on device/headphone calibration and environment.
         </footer>
 
         <script
